@@ -1,0 +1,11 @@
+@media (min-width: 1375px) {
+  .custom1375\:block {
+    display: block !important;
+  }
+  .custom1375\:hidden {
+    display: none !important;
+  }
+  .custom1375\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
