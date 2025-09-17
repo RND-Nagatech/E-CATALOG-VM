@@ -16,7 +16,8 @@ const CartPage: React.FC<{
 
   return (
   <div className="min-h-screen bg-white flex flex-col items-center">
-  <div className="w-full max-w-lg bg-white sticky top-0 left-0 z-20 border-b shadow flex items-center justify-center px-4 py-3">
+    {/* Header sticky */}
+    <div className="w-full max-w-lg bg-white sticky top-0 left-0 z-20 border-b shadow flex items-center justify-center px-4 py-3">
         {/* Tombol kembali sejajar header */}
         <button
           className="absolute left-4 top-3 z-30 bg-white shadow-lg rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition"
@@ -36,8 +37,11 @@ const CartPage: React.FC<{
         </div>
       </div>
 
-      {/* Main Content */}
-  <div className="w-full max-w-lg flex-1 pb-28 px-2 sm:px-0 overflow-y-auto">
+      {/* Main Content: scrollable only for items */}
+      <div
+        className="w-full max-w-lg flex-1 px-2 sm:px-0 overflow-y-auto pb-28"
+        style={{ minHeight: 0 }}
+      >
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 select-none">
             <p className="text-gray-400 text-lg font-semibold mb-1">Keranjang kosong</p>

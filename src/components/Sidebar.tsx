@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, ChevronLeft } from 'lucide-react';
+import { Search, ChevronLeft, RotateCcw } from 'lucide-react';
 import { RangeSlider } from './RangeSlider';
 import { FilterState } from '../types/Product';
 
@@ -22,6 +22,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const categories = ['Cincin', 'Kalung', 'Gelang', 'Anting', 'Bros', 'Liontin'];
   const [showCatDropdown, setShowCatDropdown] = useState(false);
+  const [spinReset, setSpinReset] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showPerPageDropdown, setShowPerPageDropdown] = useState(false);
   const catDropdownRef = useRef<HTMLDivElement>(null);
@@ -41,6 +42,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Prevent body scroll when sidebar modal is open (mobile)
+  useEffect(() => {
+    if (isSidebarModal && isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isSidebarModal, isOpen]);
 
   useEffect(() => {
     if (!showCatDropdown) return;
@@ -91,7 +104,44 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }
         style={{ boxSizing: 'border-box' }}
       >
-        <div className={`p-4 h-full flex-1 ${isSidebarModal ? 'overflow-y-auto' : 'overflow-hidden'}`}>
+        <div className={`p-4 h-full flex-1 ${isSidebarModal ? 'overflow-hidden' : 'overflow-hidden'}`} style={isSidebarModal ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : {}}>
+          {/* Hide scrollbar for mobile sidebar */}
+          <style>{`
+            @media (max-width: 1374px) {
+              .sidebar-no-scroll::-webkit-scrollbar { display: none; }
+            }
+          `}</style>
+          {/* Modern Reset Filter Button - Floating Top Right */}
+          <button
+            className={`absolute top-0 right-4 z-50 border border-gray-300 shadow-sm rounded-full p-2 text-gray-700 transition ${spinReset ? 'bg-gray-100' : 'bg-white'} hover:bg-gray-200 hover:text-gray-900`}
+            onClick={() => {
+              setSpinReset(true);
+              onFiltersChange({
+                categories: [],
+                priceRange: [0, 10000000],
+                weightRange: [0, 50],
+                sizeRange: [0, 1000],
+                searchQuery: '',
+                sortBy: 'name',
+                sortOrder: 'asc'
+              });
+              setTimeout(() => {
+                setSpinReset(false);
+              }, 600);
+            }}
+            onPointerUp={e => {
+              if (e && e.currentTarget) e.currentTarget.blur();
+            }}
+            onTouchEnd={e => {
+              // Paksa hilangkan state active/abu-abu di mobile segera setelah sentuh
+              if (e && e.currentTarget) setTimeout(() => e.currentTarget.blur(), 0);
+            }}
+            type="button"
+            aria-label="Reset Filter"
+            title="Reset Filter"
+          >
+            <RotateCcw className={`h-5 w-5 transition-transform duration-300 ${spinReset ? 'animate-spin' : ''}`} />
+          </button>
           {/* Search - only on desktop (custom1375 and up) */}
           <div className="relative mb-8 hidden custom1375:block">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
