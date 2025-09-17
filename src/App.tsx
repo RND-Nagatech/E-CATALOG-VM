@@ -10,10 +10,21 @@ import { mockProducts } from './data/mockProducts';
 import type { FilterState } from './types/Product';
 
 function App() {
-  // Auto-close sidebar on mode change
+  // Auto-close sidebar on mode change & force re-render
   useEffect(() => {
     const handleResize = () => {
-      setSidebarOpen(false); // Always close sidebar on mode change
+      // Always close sidebar on mode change
+      setSidebarOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Force re-render on resize to fix blank bug
+  const [, setWindowWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
