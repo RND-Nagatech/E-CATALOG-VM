@@ -7,13 +7,13 @@ interface ProductGridProps {
   loading?: boolean;
   onProductClick?: (product: Product) => void;
   onAddToCart?: (product: Product) => void;
-  cartItems: Product[]; // Ensure cartItems is required
+  cartItems: Product[];
 }
 
 export const ProductGrid: React.FC<ProductGridProps> = ({ products, loading = false, onProductClick, onAddToCart, cartItems }) => {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="product-grid-container grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 custom1375:grid-cols-4 gap-4 sm:gap-6">
         {[...Array(12)].map((_, i) => (
           <div key={i} className="bg-white rounded-lg shadow-sm overflow-hidden animate-pulse">
             <div className="aspect-square bg-gray-200" />
@@ -44,7 +44,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({ products, loading = fa
   }
 
   return (
-  <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 custom1375:grid-cols-4 gap-4 sm:gap-6">
+    <div className="product-grid-container grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 custom1375:grid-cols-4 gap-4 sm:gap-6">
       {products.map((product) => (
         <ProductCard
           key={product.id}

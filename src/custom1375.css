@@ -6,6 +6,20 @@
     display: none !important;
   }
   .custom1375\:grid-cols-4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (min-width: 1626px) {
+  .product-grid-container {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 2rem !important;
+  }
+}
+
+@media (min-width: 1920px) {
+  .product-grid-container {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 2.5rem !important;
   }
 }

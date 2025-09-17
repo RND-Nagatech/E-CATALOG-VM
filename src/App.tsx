@@ -193,6 +193,19 @@ function App() {
                 return `Menampilkan ${shown} dari ${filteredProducts.length}`;
               })()}
             </p>
+            {/* Search Input - only visible on screens < 1375px */}
+            <div className="block custom1375:hidden mt-4">
+              <div className="relative max-w-md">
+                <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" /></svg>
+                <input
+                  type="text"
+                  placeholder="Cari produk..."
+                  value={filters.searchQuery}
+                  onChange={e => setFilters({ ...filters, searchQuery: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
+                />
+              </div>
+            </div>
           </div>
           {/* Sort By Filter - only visible on desktop */}
           <div className="hidden sm:flex flex-col gap-2 sm:flex-row sm:items-center sm:ml-auto">

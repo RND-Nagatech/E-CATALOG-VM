@@ -92,8 +92,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         style={{ boxSizing: 'border-box' }}
       >
         <div className={`p-4 h-full flex-1 ${isSidebarModal ? 'overflow-y-auto' : 'overflow-hidden'}`}>
-          {/* Search */}
-          <div className="relative mb-8">
+          {/* Search - only on desktop (custom1375 and up) */}
+          <div className="relative mb-8 hidden custom1375:block">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
