@@ -177,7 +177,7 @@ function App() {
     />
 
     {/* Main Content: always visible, takes full width on mobile */}
-    <main className="flex-1 min-w-0">
+    <main className="flex-1 min-w-0 min-h-screen">
       <div className="px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         {/* Results Header */}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-6">
