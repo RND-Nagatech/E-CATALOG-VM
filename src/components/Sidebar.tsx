@@ -1,7 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, ChevronLeft, RotateCcw } from 'lucide-react';
-import { RangeSlider } from './RangeSlider';
-import { FilterState } from '../types/Product';
+import React, { useState, useEffect, useRef } from "react";
+import { Search, ChevronLeft, RotateCcw } from "lucide-react";
+import { RangeSlider } from "./RangeSlider";
+import { FilterState } from "../types/Product";
+
+// Tambah state lokal untuk debounce
+const useDebounce = <T,>(value: T, delay: number): T => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 interface SidebarProps {
   filters: FilterState;
@@ -18,9 +35,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpen,
   onClose,
   itemsPerPage,
-  onItemsPerPageChange
+  onItemsPerPageChange,
 }) => {
-  const categories = ['Cincin', 'Kalung', 'Gelang', 'Anting', 'Bros', 'Liontin'];
+  // const categories = [
+  //   "Cincin",
+  //   "Kalung",
+  //   "Gelang",
+  //   "Anting",
+  //   "Bros",
+  //   "Liontin",
+  // ];
+
+  // --- 🔑 bikin state sementara buat slider ---
+  const [priceRange, setPriceRange] = useState(filters.priceRange);
+  const [weightRange, setWeightRange] = useState(filters.weightRange);
+  const [sizeRange, setSizeRange] = useState(filters.sizeRange);
+
+  // --- 🔑 debounce value slider ---
+  const debouncedPrice = useDebounce(priceRange, 500);
+  const debouncedWeight = useDebounce(weightRange, 500);
+  const debouncedSize = useDebounce(sizeRange, 500);
+
   const [showCatDropdown, setShowCatDropdown] = useState(false);
   const [spinReset, setSpinReset] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
@@ -28,65 +63,85 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const catDropdownRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [isSidebarModal, setIsSidebarModal] = useState(
-    typeof window !== 'undefined' && window.innerWidth < 1375
+    typeof window !== "undefined" && window.innerWidth < 1375
   );
   const [isSmallScreen, setIsSmallScreen] = useState(
-    typeof window !== 'undefined' && window.innerWidth <= 661
+    typeof window !== "undefined" && window.innerWidth <= 661
   );
+
+  useEffect(() => {
+    onFiltersChange({ ...filters, priceRange: debouncedPrice });
+  }, [debouncedPrice]);
+
+  useEffect(() => {
+    onFiltersChange({ ...filters, weightRange: debouncedWeight });
+  }, [debouncedWeight]);
+
+  useEffect(() => {
+    onFiltersChange({ ...filters, sizeRange: debouncedSize });
+  }, [debouncedSize]);
 
   useEffect(() => {
     const handleResize = () => {
       setIsSidebarModal(window.innerWidth < 1375);
       setIsSmallScreen(window.innerWidth <= 661);
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Prevent body scroll when sidebar modal is open (mobile)
   useEffect(() => {
     if (isSidebarModal && isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, [isSidebarModal, isOpen]);
 
   useEffect(() => {
     if (!showCatDropdown) return;
     function handleClickOutside(e: MouseEvent) {
-      if (catDropdownRef.current && !catDropdownRef.current.contains(e.target as Node)) {
+      if (
+        catDropdownRef.current &&
+        !catDropdownRef.current.contains(e.target as Node)
+      ) {
         setShowCatDropdown(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showCatDropdown]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onFiltersChange({
       ...filters,
-      searchQuery: e.target.value
+      searchQuery: e.target.value,
     });
   };
 
-  const handleCategoryChange = (cat: string) => {
-    if (filters.categories.includes(cat)) {
-      onFiltersChange({ ...filters, categories: filters.categories.filter(c => c !== cat) });
-    } else {
-      onFiltersChange({ ...filters, categories: [...filters.categories, cat] });
-    }
-  };
+  // const handleCategoryChange = (cat: string) => {
+  //   if (filters.categories.includes(cat)) {
+  //     onFiltersChange({
+  //       ...filters,
+  //       categories: filters.categories.filter((c) => c !== cat),
+  //     });
+  //   } else {
+  //     onFiltersChange({ ...filters, categories: [...filters.categories, cat] });
+  //   }
+  // };
 
   return (
     <>
       {/* Overlay for mobile modal */}
       <div
         className={`fixed inset-0 bg-black bg-opacity-30 z-40 transition-opacity duration-300 ${
-          isSidebarModal && isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+          isSidebarModal && isOpen
+            ? "opacity-100 visible"
+            : "opacity-0 invisible"
         }`}
         onClick={onClose}
         aria-label="Tutup Filter"
@@ -98,13 +153,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         className={
           isSidebarModal
             ? `fixed top-0 left-0 h-full w-4/5 max-w-xs bg-white z-50 shadow-lg transition-transform duration-300 rounded-xl px-4 pt-6 pb-10 sm:px-6 flex flex-col ${
-                isOpen ? 'translate-x-0' : '-translate-x-full'
+                isOpen ? "translate-x-0" : "-translate-x-full"
               }`
             : `sticky top-16 h-screen w-full max-w-xs bg-white rounded-xl shadow-lg px-4 pt-6 pb-10 sm:px-6 overflow-visible hidden custom1375:block`
         }
-        style={{ boxSizing: 'border-box' }}
+        style={{ boxSizing: "border-box" }}
       >
-        <div className={`p-4 h-full flex-1 ${isSidebarModal ? 'overflow-hidden' : 'overflow-hidden'}`} style={isSidebarModal ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : {}}>
+        <div
+          className={`p-4 h-full flex-1 ${
+            isSidebarModal ? "overflow-hidden" : "overflow-hidden"
+          }`}
+          style={
+            isSidebarModal
+              ? { scrollbarWidth: "none", msOverflowStyle: "none" }
+              : {}
+          }
+        >
           {/* Hide scrollbar for mobile sidebar */}
           <style>{`
             @media (max-width: 1374px) {
@@ -113,7 +177,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           `}</style>
           {/* Modern Reset Filter Button - Floating Top Right */}
           <button
-            className={`absolute top-0 right-4 z-50 border border-gray-300 shadow-sm rounded-full p-2 text-gray-700 transition ${spinReset ? 'bg-gray-100' : 'bg-white'} hover:bg-gray-200 hover:text-gray-900`}
+            className={`absolute top-0 right-4 z-50 border border-gray-300 shadow-sm rounded-full p-2 text-gray-700 transition ${
+              spinReset ? "bg-gray-100" : "bg-white"
+            } hover:bg-gray-200 hover:text-gray-900`}
             onClick={() => {
               setSpinReset(true);
               onFiltersChange({
@@ -121,26 +187,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 priceRange: [0, 10000000],
                 weightRange: [0, 50],
                 sizeRange: [0, 1000],
-                searchQuery: '',
-                sortBy: 'name',
-                sortOrder: 'asc'
+                searchQuery: "",
+                sortBy: "name",
+                sortOrder: "asc",
               });
               setTimeout(() => {
                 setSpinReset(false);
               }, 600);
             }}
-            onPointerUp={e => {
+            onPointerUp={(e) => {
               if (e && e.currentTarget) e.currentTarget.blur();
             }}
-            onTouchEnd={e => {
+            onTouchEnd={(e) => {
               // Paksa hilangkan state active/abu-abu di mobile segera setelah sentuh
-              if (e && e.currentTarget) setTimeout(() => e.currentTarget.blur(), 0);
+              if (e && e.currentTarget)
+                setTimeout(() => e.currentTarget.blur(), 0);
             }}
             type="button"
             aria-label="Reset Filter"
             title="Reset Filter"
           >
-            <RotateCcw className={`h-5 w-5 transition-transform duration-300 ${spinReset ? 'animate-spin' : ''}`} />
+            <RotateCcw
+              className={`h-5 w-5 transition-transform duration-300 ${
+                spinReset ? "animate-spin" : ""
+              }`}
+            />
           </button>
           {/* Search - only on desktop (custom1375 and up) */}
           <div className="relative mb-8 hidden custom1375:block">
@@ -154,7 +225,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             />
           </div>
 
-          {/* Categories dropdown */}
+          {/* Categories dropdown
           <div className="mb-6 relative" ref={catDropdownRef}>
             <button
               type="button"
@@ -210,7 +281,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 ))}
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* Range sliders */}
           <RangeSlider
@@ -218,7 +289,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             min={0}
             max={10000000}
             value={filters.priceRange}
-            onChange={(priceRange) => onFiltersChange({ ...filters, priceRange })}
+            // onChange={(priceRange) => onFiltersChange({ ...filters, priceRange })}
+            onChange={setPriceRange}
             unit="Rp"
             step={50000}
           />
@@ -227,7 +299,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             min={0}
             max={50}
             value={filters.weightRange}
-            onChange={(weightRange) => onFiltersChange({ ...filters, weightRange })}
+            // onChange={(weightRange) => onFiltersChange({ ...filters, weightRange })}
+            onChange={setWeightRange} // ✅ langsung update state lokal
             unit="g"
             step={1}
           />
@@ -237,7 +310,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               min={0}
               max={1000}
               value={filters.sizeRange}
-              onChange={(sizeRange) => onFiltersChange({ ...filters, sizeRange })}
+              // onChange={(sizeRange) => onFiltersChange({ ...filters, sizeRange })}
+              onChange={setSizeRange} // ✅ langsung update state lokal
               step={5}
             />
           </div>
@@ -248,68 +322,100 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {/* Sort By Dropdown */}
               {(() => {
                 const sortOptions = [
-                  { value: 'name-asc', label: 'Nama (A-Z)' },
-                  { value: 'price-asc', label: 'Harga Termurah' },
-                  { value: 'price-desc', label: 'Harga Termahal' },
-                  { value: 'weight-asc', label: 'Berat Teringan' },
-                  { value: 'weight-desc', label: 'Berat Terberat' },
-                  { value: 'likes-desc', label: 'Paling Banyak Disukai' },
+                  { value: "name-asc", label: "Nama (A-Z)" },
+                  { value: "price-asc", label: "Harga Termurah" },
+                  { value: "price-desc", label: "Harga Termahal" },
+                  { value: "weight-asc", label: "Berat Teringan" },
+                  { value: "weight-desc", label: "Berat Terberat" },
+                  { value: "likes-desc", label: "Paling Banyak Disukai" },
                 ];
                 const selectedSort = sortOptions.find(
-                  opt => opt.value === filters.sortBy + '-' + filters.sortOrder
+                  (opt) =>
+                    opt.value === filters.sortBy + "-" + filters.sortOrder
                 );
                 return (
                   <div className="mb-2 relative">
                     <button
                       type="button"
                       className={`flex items-center justify-between w-full text-sm font-semibold text-gray-700 px-3 py-2 rounded-lg border border-gray-200 bg-white shadow-sm hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                        showSortDropdown ? 'border-blue-400' : ''
+                        showSortDropdown ? "border-blue-400" : ""
                       }`}
-                      onClick={() => setShowSortDropdown(v => !v)}
+                      onClick={() => setShowSortDropdown((v) => !v)}
                       aria-expanded={showSortDropdown}
                     >
-                      <span>Urutkan: {selectedSort ? selectedSort.label : 'Pilih'}</span>
+                      <span>
+                        Urutkan: {selectedSort ? selectedSort.label : "Pilih"}
+                      </span>
                       <svg
                         className={`w-4 h-4 ml-2 transition-transform ${
-                          showSortDropdown ? 'rotate-180' : ''
+                          showSortDropdown ? "rotate-180" : ""
                         }`}
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
                     <div
                       className={`absolute left-0 w-full mt-2 rounded-xl border border-gray-100 bg-white shadow-lg transition-all duration-200 z-20 ${
                         showSortDropdown
-                          ? 'opacity-100 visible translate-y-0'
-                          : 'opacity-0 invisible -translate-y-2'
+                          ? "opacity-100 visible translate-y-0"
+                          : "opacity-0 invisible -translate-y-2"
                       }`}
                     >
                       <div className="p-2">
-                        {sortOptions.map(opt => (
+                        {sortOptions.map((opt) => (
                           <button
                             key={opt.value}
                             className={`w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-blue-50 ${
                               selectedSort && selectedSort.value === opt.value
-                                ? 'bg-blue-100 text-blue-700 font-semibold'
-                                : 'text-gray-700'
+                                ? "bg-blue-100 text-blue-700 font-semibold"
+                                : "text-gray-700"
                             }`}
                             onClick={() => {
                               setShowSortDropdown(false);
-                              if (opt.value === 'price-asc')
-                                onFiltersChange({ ...filters, sortBy: 'price', sortOrder: 'asc' });
-                              else if (opt.value === 'price-desc')
-                                onFiltersChange({ ...filters, sortBy: 'price', sortOrder: 'desc' });
-                              else if (opt.value === 'weight-asc')
-                                onFiltersChange({ ...filters, sortBy: 'weight', sortOrder: 'asc' });
-                              else if (opt.value === 'weight-desc')
-                                onFiltersChange({ ...filters, sortBy: 'weight', sortOrder: 'desc' });
-                              else if (opt.value === 'likes-desc')
-                                onFiltersChange({ ...filters, sortBy: 'likes', sortOrder: 'desc' });
-                              else onFiltersChange({ ...filters, sortBy: 'name', sortOrder: 'asc' });
+                              if (opt.value === "price-asc")
+                                onFiltersChange({
+                                  ...filters,
+                                  sortBy: "price",
+                                  sortOrder: "asc",
+                                });
+                              else if (opt.value === "price-desc")
+                                onFiltersChange({
+                                  ...filters,
+                                  sortBy: "price",
+                                  sortOrder: "desc",
+                                });
+                              else if (opt.value === "weight-asc")
+                                onFiltersChange({
+                                  ...filters,
+                                  sortBy: "weight",
+                                  sortOrder: "asc",
+                                });
+                              else if (opt.value === "weight-desc")
+                                onFiltersChange({
+                                  ...filters,
+                                  sortBy: "weight",
+                                  sortOrder: "desc",
+                                });
+                              else if (opt.value === "likes-desc")
+                                onFiltersChange({
+                                  ...filters,
+                                  sortBy: "likes",
+                                  sortOrder: "desc",
+                                });
+                              else
+                                onFiltersChange({
+                                  ...filters,
+                                  sortBy: "name",
+                                  sortOrder: "asc",
+                                });
                             }}
                           >
                             {opt.label}
@@ -329,39 +435,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <button
                       type="button"
                       className={`flex items-center justify-between w-full text-sm font-semibold text-gray-700 px-3 py-2 rounded-lg border border-gray-200 bg-white shadow-sm hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                        showPerPageDropdown ? 'border-blue-400' : ''
+                        showPerPageDropdown ? "border-blue-400" : ""
                       }`}
-                      onClick={() => setShowPerPageDropdown(v => !v)}
+                      onClick={() => setShowPerPageDropdown((v) => !v)}
                       aria-expanded={showPerPageDropdown}
                     >
                       <span>Tampilkan: {itemsPerPage}</span>
                       <svg
                         className={`w-4 h-4 ml-2 transition-transform ${
-                          showPerPageDropdown ? 'rotate-180' : ''
+                          showPerPageDropdown ? "rotate-180" : ""
                         }`}
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
                     <div
                       className={`absolute left-0 w-full mt-2 rounded-xl border border-gray-100 bg-white shadow-lg transition-all duration-200 z-20 ${
                         showPerPageDropdown
-                          ? 'opacity-100 visible translate-y-0'
-                          : 'opacity-0 invisible -translate-y-2'
+                          ? "opacity-100 visible translate-y-0"
+                          : "opacity-0 invisible -translate-y-2"
                       }`}
                     >
                       <div className="p-2">
-                        {perPageOptions.map(opt => (
+                        {perPageOptions.map((opt) => (
                           <button
                             key={opt}
                             className={`w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-blue-50 ${
                               itemsPerPage === opt
-                                ? 'bg-blue-100 text-blue-700 font-semibold'
-                                : 'text-gray-700'
+                                ? "bg-blue-100 text-blue-700 font-semibold"
+                                : "text-gray-700"
                             }`}
                             onClick={() => {
                               setShowPerPageDropdown(false);
@@ -384,7 +494,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {isSidebarModal && (
           <button
             className="absolute bottom-4 right-4 bg-white border border-gray-200 shadow-lg rounded-full p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition"
-            style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+            style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
             onClick={onClose}
             aria-label="Tutup Filter"
             type="button"

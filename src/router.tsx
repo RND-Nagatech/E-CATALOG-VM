@@ -21,6 +21,7 @@ export function useCart() {
 const CartProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [cartItems, setCartItems] = useState<any[]>(() => {
     const saved = sessionStorage.getItem('cartItems');
+    console.log('Loaded cartItems from sessionStorage_KKKKKKKKK:', saved);
     if (saved) return JSON.parse(saved);
     return [];
   });

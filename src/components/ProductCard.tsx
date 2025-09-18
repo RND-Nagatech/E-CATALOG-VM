@@ -88,7 +88,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
         <div className="flex items-center justify-between mt-auto">
           <div>
             <span className="text-base font-semibold text-gray-900">
-              Rp{product.price}
+              {/* Rp{product.price} */}
+              Rp {new Intl.NumberFormat("id-ID").format(product.price)}
             </span>
           </div>
           <div className="text-xs text-gray-500 text-right">
