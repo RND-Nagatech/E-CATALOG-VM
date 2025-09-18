@@ -57,14 +57,11 @@ function App() {
     sortOrder: "asc",
   });
 
-  // const LIMIT = 10;
-
   const [vpsServers, setAccounts] = useState<any[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<
     import("./types/Product").Product | null
   >(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  // const [cartOpen, setCartOpen] = useState(false);
   const navigate = useNavigate();
   const { cartItems, setCartItems } = useCart();
   const [loading, setLoading] = useState<boolean>(true);
@@ -72,93 +69,6 @@ function App() {
   useEffect(() => {
     setCurrentPage(1);
   }, [filters, itemsPerPage]);
-
-  // Auto-load cart from ?cart=... on first load
-  // useEffect(() => {
-  //   const fetchAccounts = async () => {
-  //     try {
-  //       const res = await fetch(`${BASE_URL}barang/get/barang-catalog`, {
-  //         cache: "no-store",
-  //       });
-  //       if (!res.ok) throw new Error(`Error ${res.status}`);
-  //       const data: AuthAccount[] = await res.json();
-  //       // 🔥 convert ke Product + ambil image dari firebase jika ada
-  //       const productsFromAPI: Product[] = await Promise.all(
-  //         data.map(async (acc) => {
-  //           const imageUrl = await getImageURL(
-  //             `NSIPIC/ITY/foto_produk/${acc.kode_barang}.jpg`
-  //           );
-  //           console.log('GOT IMAGE URL:', imageUrl);
-  //           return convertToProduct({ ...acc, image_path: imageUrl });
-  //         })
-  //       );
-  //       // const productsFromAPI: Product[] = data.map(convertToProduct);
-  //       setAccounts(productsFromAPI);
-  //     } catch (err) {
-  //       console.error("Failed to fetch accounts:", err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchAccounts();
-  //   // const params = new URLSearchParams(window.location.search);
-  //   // const cartParam = params.get("cart");
-  //   // if (cartParam) {
-  //   //   const ids = cartParam.split(',').map(id => parseInt(id, 10)).filter(Boolean);
-  //   //   const products = mockProducts.filter((p: Product) => ids.includes(p.id));
-  //   //   if (products.length > 0) setCartItems(products);
-  //   // }
-  //   // eslint-disable-next-line
-  // }, []);
-
-  /////
-  // useEffect(() => {
-  //   const fetchAccounts = async () => {
-  //     console.log(
-  //       "Fetching accounts for page",
-  //       currentPage,
-  //       "with limit",
-  //       itemsPerPage
-  //     );
-  //     try {
-  //       const res = await fetch(
-  //         `${BASE_URL}barang/get/barang-catalog?skip=${currentPage}&limit=${itemsPerPage}`,
-  //         { cache: "no-store" }
-  //       );
-  //       if (!res.ok) throw new Error(`Error ${res.status}`);
-  //       const json = await res.json();
-  //       const data: AuthAccount[] = json.data;
-  //       console.log("Fetched accounts:", data.length, data);
-  //       const productsFromAPI: Product[] = await Promise.all(
-  //         data.map(async (acc) => {
-  //           const imageUrl = await getImageURL(
-  //             `NSIPIC/ITY/foto_produk/${acc.kode_barang}.jpg`
-  //           );
-  //           console.log("GOT IMAGE URL:", imageUrl);
-  //           return convertToProduct({ ...acc, image_path: imageUrl });
-  //         })
-  //       );
-
-  //       setAccounts(productsFromAPI);
-  //       setTotalPages(json.meta.totalPages);
-  //       setCurrentPage(json.meta.page);
-  //       setTotalItems(json.meta.total);
-  //       setLimit(json.meta.limit);
-  //       setLoading(true)
-  //     } catch (err) {
-  //       console.error("Failed to fetch accounts:", err);
-  //     } finally {
-  //       setLoading(false);
-
-  //     }
-  //   };
-
-  //   fetchAccounts();
-  //   // }, []);
-  // }, [currentPage, itemsPerPage]);
-
-  
 
   useEffect(() => {
     console.log(
@@ -187,7 +97,13 @@ function App() {
       try {
         setLoading(true); // pindahkan ke awal biar konsisten
         const res = await fetch(
-          `${BASE_URL}barang/get/barang-catalog?skip=${currentPage}&limit=${itemsPerPage}& berat_awal=${Number(filters.weightRange[0])}&berat_akhir=${Number(filters.weightRange[1])}&size_awal=${filters.sizeRange[0]}&size_akhir=${filters.sizeRange[1]}&harga_awal=${filters.priceRange[0]}&harga_akhir=${filters.priceRange[1]}`,
+          `${BASE_URL}barang/get/barang-catalog?skip=${currentPage}&limit=${itemsPerPage}& berat_awal=${Number(
+            filters.weightRange[0]
+          )}&berat_akhir=${Number(filters.weightRange[1])}&size_awal=${
+            filters.sizeRange[0]
+          }&size_akhir=${filters.sizeRange[1]}&harga_awal=${
+            filters.priceRange[0]
+          }&harga_akhir=${filters.priceRange[1]}`,
           { cache: "no-store" }
         );
         if (!res.ok) throw new Error(`Error ${res.status}`);
@@ -203,8 +119,6 @@ function App() {
             return convertToProduct({ ...acc, image_path: imageUrl });
           })
         );
-
-        
 
         setAccounts(productsFromAPI);
         setTotalPages(json.meta.totalPages);
@@ -315,63 +229,6 @@ function App() {
     return filtered;
   }, [filters, vpsServers]);
 
-  // const filteredProducts = useMemo(() => {
-  //   return;
-  //   // let filtered = mockProducts.filter((product: Product) => {
-  //   //   // Hide products that are not in stock
-  //   //   if (!product.inStock) {
-  //   //     return false;
-  //   //   }
-  //   //   // Category filter
-  //   //   if (filters.categories.length > 0 && !filters.categories.includes(product.category)) {
-  //   //     return false;
-  //   //   }
-  //   //   // Price filter
-  //   //   if (product.price < filters.priceRange[0] || product.price > filters.priceRange[1]) {
-  //   //     return false;
-  //   //   }
-  //   //   // Weight filter
-  //   //   if (product.weight < filters.weightRange[0] || product.weight > filters.weightRange[1]) {
-  //   //     return false;
-  //   //   }
-  //   //   // Size filter (using maximum dimension)
-  //   //   const maxDimension = Math.max(product.dimensions.width, product.dimensions.height, product.dimensions.depth);
-  //   //   if (maxDimension < filters.sizeRange[0] || maxDimension > filters.sizeRange[1]) {
-  //   //     return false;
-  //   //   }
-  //   //   // Search query
-  //   //   if (filters.searchQuery && !product.name.toLowerCase().includes(filters.searchQuery.toLowerCase()) &&
-  //   //       !product.description.toLowerCase().includes(filters.searchQuery.toLowerCase())) {
-  //   //     return false;
-  //   //   }
-  //   //   return true;
-  //   // });
-
-  //   // Sort products
-  //   // filtered.sort((a: Product, b: Product) => {
-  //   //   let comparison = 0;
-  //   //   switch (filters.sortBy) {
-  //   //     case 'name':
-  //   //       comparison = a.name.localeCompare(b.name);
-  //   //       break;
-  //   //     case 'price':
-  //   //       comparison = a.price - b.price;
-  //   //       break;
-  //   //     case 'weight':
-  //   //       comparison = a.weight - b.weight;
-  //   //       break;
-  //   //     case 'rating':
-  //   //       comparison = a.rating - b.rating;
-  //   //       break;
-  //   //     case 'likes':
-  //   //       comparison = a.likes - b.likes;
-  //   //       break;
-  //   //   }
-  //   //   return filters.sortOrder === 'desc' ? -comparison : comparison;
-  //   // });
-
-  //   // return filtered;
-  // }, [filters]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -589,7 +446,7 @@ function App() {
                       ))}
                     </div>
                   ) : (
-                    <ProductGrid                      
+                    <ProductGrid
                       products={vpsServers}
                       onProductClick={(product) => {
                         setSelectedProduct(product);
